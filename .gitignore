@@ -1,0 +1,22 @@
+# Local environments and credentials
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*credentials*.json
+*token*.json
+cookies.txt
+*.cookies.txt
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+# Local data, generated outputs and model caches
+data/*
+!data/README.md
+output/
+outputs/
+mortgage_outputs/
+media_analytics_output/
+.cache/

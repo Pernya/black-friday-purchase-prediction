@@ -1,0 +1,15 @@
+{
+  "source_notebook": "black_friday.ipynb",
+  "source_sha256": "2e53d81ef97978fcd8cee9375df7c9c3e933da4941ced8b91d2f8f64f6aba59b",
+  "publication_date": "2026-11-06",
+  "original_cells": 25,
+  "original_executed_code_cells": 13,
+  "original_unexecuted_code_cells": 0,
+  "fresh_end_to_end_execution": false,
+  "validation": "nbformat schema, transformed IPython code syntax, Python AST, Orange XML where present",
+  "publication_changes": [
+    "Notebook and required Python module retained",
+    "CLI and notebook paths made relative",
+    "Saved figures preserved; no training-method changes"
+  ]
+}
