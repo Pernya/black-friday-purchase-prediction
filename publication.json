@@ -11,5 +11,20 @@
     "Notebook and required Python module retained",
     "CLI and notebook paths made relative",
     "Saved figures preserved; no training-method changes"
-  ]
+  ],
+  "editorial_revision": {
+    "date": "2026-11-06",
+    "changes": [
+      "Reader-oriented summary and section navigation",
+      "Metric definitions and result-status labels",
+      "Python formatting with AST equivalence check"
+    ],
+    "computation_unchanged": true,
+    "saved_outputs_unchanged": true,
+    "fresh_end_to_end_execution": false
+  },
+  "documentation": {
+    "date": "2026-11-18",
+    "path": "docs/PROJECT_GUIDE.md"
+  }
 }

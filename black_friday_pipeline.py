@@ -111,7 +111,9 @@ def factorize_from_full(
     return encoded.iloc[:train_len].copy(), encoded.iloc[train_len:].copy()
 
 
-def build_feature_frames(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def build_feature_frames(
+    train: pd.DataFrame, test: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     train_raw = train.copy()
     test_raw = test.copy()
 
@@ -154,10 +156,14 @@ def build_feature_frames(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.Da
     full["User_Unique_Products"] = full["User_ID"].map(user_unique_products).astype(np.int32)
     full["User_Unique_Cat1"] = full["User_ID"].map(user_unique_cat1).astype(np.int16)
     full["User_Cat_Freq"] = (
-        full.set_index(["User_ID", "Product_Category_1"]).index.map(user_cat_freq).astype(np.int32)
+        full.set_index(["User_ID", "Product_Category_1"])
+        .index.map(user_cat_freq)
+        .astype(np.int32)
     )
     full["Product_City_Freq"] = (
-        full.set_index(["Product_ID", "City_Category"]).index.map(product_city_freq).astype(np.int32)
+        full.set_index(["Product_ID", "City_Category"])
+        .index.map(product_city_freq)
+        .astype(np.int32)
     )
     full["Category_Combo_Freq"] = (
         full.set_index(
@@ -168,13 +174,19 @@ def build_feature_frames(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.Da
     )
 
     full["Category_12"] = (
-        full["Product_Category_1"].astype(str) + "_" + full["Product_Category_2_filled"].astype(str)
+        full["Product_Category_1"].astype(str)
+        + "_"
+        + full["Product_Category_2_filled"].astype(str)
     )
     full["Category_13"] = (
-        full["Product_Category_1"].astype(str) + "_" + full["Product_Category_3_filled"].astype(str)
+        full["Product_Category_1"].astype(str)
+        + "_"
+        + full["Product_Category_3_filled"].astype(str)
     )
     full["Category_23"] = (
-        full["Product_Category_2_filled"].astype(str) + "_" + full["Product_Category_3_filled"].astype(str)
+        full["Product_Category_2_filled"].astype(str)
+        + "_"
+        + full["Product_Category_3_filled"].astype(str)
     )
     full["Category_Combo"] = (
         full["Product_Category_1"].astype(str)
@@ -239,18 +251,24 @@ def build_feature_frames(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.Da
     full["Occupation_Marital"] = (
         full["Occupation"].astype(str) + "_" + full["Marital_Status"].astype(str)
     )
-    full["Occupation_City"] = full["Occupation"].astype(str) + "_" + full["City_Category"].astype(str)
+    full["Occupation_City"] = (
+        full["Occupation"].astype(str) + "_" + full["City_Category"].astype(str)
+    )
     full["City_Stay"] = (
         full["City_Category"].astype(str) + "_" + full["Stay_In_Current_City_Years"].astype(str)
     )
     full["Stay_Marital"] = (
-        full["Stay_In_Current_City_Years"].astype(str) + "_" + full["Marital_Status"].astype(str)
+        full["Stay_In_Current_City_Years"].astype(str)
+        + "_"
+        + full["Marital_Status"].astype(str)
     )
     full["Stay_Gender"] = (
         full["Stay_In_Current_City_Years"].astype(str) + "_" + full["Gender"].astype(str)
     )
     full["Age_Gender"] = full["Age"].astype(str) + "_" + full["Gender"].astype(str)
-    full["Occupation_Gender"] = full["Occupation"].astype(str) + "_" + full["Gender"].astype(str)
+    full["Occupation_Gender"] = (
+        full["Occupation"].astype(str) + "_" + full["Gender"].astype(str)
+    )
 
     encoded_columns = [
         "Product_ID",
@@ -317,7 +335,9 @@ def add_target_encoding(
     return train_encoded, test_encoded
 
 
-def apply_target_encodings(train_fe: pd.DataFrame, test_fe: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def apply_target_encodings(
+    train_fe: pd.DataFrame, test_fe: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     encoding_plan = {
         "User_ID": "User_ID_TE",
         "Product_ID": "Product_ID_TE",
@@ -329,7 +349,9 @@ def apply_target_encodings(train_fe: pd.DataFrame, test_fe: pd.DataFrame) -> tup
         "Occupation_City_Gender": "Occupation_City_Gender_TE",
     }
     for source, target_name in encoding_plan.items():
-        train_fe[target_name], test_fe[target_name] = add_target_encoding(train_fe, test_fe, source)
+        train_fe[target_name], test_fe[target_name] = add_target_encoding(
+            train_fe, test_fe, source
+        )
     return train_fe, test_fe
 
 
@@ -413,7 +435,9 @@ def compute_statistical_ranking(
 
     plt.figure(figsize=(10, 6))
     top_plot = ranking.head(15).sort_values("mutual_info", ascending=True)
-    sns.barplot(data=top_plot, x="mutual_info", y="feature", color=sns.color_palette("magma", 15)[8])
+    sns.barplot(
+        data=top_plot, x="mutual_info", y="feature", color=sns.color_palette("magma", 15)[8]
+    )
     plt.title("Mutual Information: сила нелинейной связи с Purchase")
     plt.xlabel("Mutual information")
     plt.ylabel("Признак")
@@ -621,13 +645,17 @@ def optimize_blend(
         for weight in np.linspace(0.0, 1.0, 21):
             w1 = float(weight)
             w2 = 1.0 - w1
-            blend_oof = np.clip(w1 * candidates[0][1] + w2 * candidates[1][1], target_floor, None)
+            blend_oof = np.clip(
+                w1 * candidates[0][1] + w2 * candidates[1][1], target_floor, None
+            )
             score = rmse(y_true, blend_oof)
             if score < best_score:
                 best_score = score
                 best_weights = {candidates[0][0]: w1, candidates[1][0]: w2}
                 best_oof = blend_oof
-                best_pred = np.clip(w1 * candidates[0][2] + w2 * candidates[1][2], target_floor, None)
+                best_pred = np.clip(
+                    w1 * candidates[0][2] + w2 * candidates[1][2], target_floor, None
+                )
     else:
         grid = np.linspace(0.0, 1.0, 11)
         for w1 in grid:
@@ -668,7 +696,9 @@ def generate_eda_plots(
     global_mean = float(train["Purchase"].mean())
     insights["global_mean_purchase"] = global_mean
 
-    missing_share = (train[["Product_Category_2", "Product_Category_3"]].isna().mean() * 100).round(2)
+    missing_share = (
+        train[["Product_Category_2", "Product_Category_3"]].isna().mean() * 100
+    ).round(2)
     insights["missing_share"] = missing_share.to_dict()
 
     cat_stats = (
@@ -677,13 +707,22 @@ def generate_eda_plots(
         .sort_index()
         .reset_index()
     )
-    insights["top_category_by_mean"] = int(cat_stats.sort_values("mean", ascending=False).iloc[0]["Product_Category_1"])
+    insights["top_category_by_mean"] = int(
+        cat_stats.sort_values("mean", ascending=False).iloc[0]["Product_Category_1"]
+    )
     insights["top_category_mean_purchase"] = float(cat_stats["mean"].max())
-    insights["most_volatile_category"] = int(cat_stats.sort_values("std", ascending=False).iloc[0]["Product_Category_1"])
+    insights["most_volatile_category"] = int(
+        cat_stats.sort_values("std", ascending=False).iloc[0]["Product_Category_1"]
+    )
 
     plt.figure(figsize=(12, 6))
     sns.barplot(data=cat_stats, x="Product_Category_1", y="std", palette="rocket")
-    plt.axhline(cat_stats["std"].mean(), color="black", linestyle="--", label="Среднее стандартное отклонение")
+    plt.axhline(
+        cat_stats["std"].mean(),
+        color="black",
+        linestyle="--",
+        label="Среднее стандартное отклонение",
+    )
     plt.title("Разброс цен (STD) по категориям")
     plt.xlabel("Product_Category_1")
     plt.ylabel("Стандартное отклонение цены")
@@ -743,25 +782,27 @@ def generate_eda_plots(
     plt.ylabel("Средний чек (Лояльность)")
     save_figure(figures_dir / "user_segmentation_rfm.png")
 
-    top_occupations = (
-        train["Occupation"].value_counts().head(3).index.tolist()
-    )
+    top_occupations = train["Occupation"].value_counts().head(3).index.tolist()
     profile = train[train["Occupation"].isin(top_occupations)].copy()
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     sns.countplot(data=profile, x="Occupation", hue="Age", ax=axes[0], palette="viridis")
     axes[0].set_title("Возрастной профиль топ-профессий")
     axes[0].set_ylabel("Количество записей")
-    gender_mix = (
-        profile.groupby(["Occupation", "Gender"]).size().reset_index(name="count")
+    gender_mix = profile.groupby(["Occupation", "Gender"]).size().reset_index(name="count")
+    gender_mix["share"] = gender_mix.groupby("Occupation")["count"].transform(
+        lambda s: 100 * s / s.sum()
     )
-    gender_mix["share"] = gender_mix.groupby("Occupation")["count"].transform(lambda s: 100 * s / s.sum())
-    sns.barplot(data=gender_mix, x="Occupation", y="share", hue="Gender", ax=axes[1], palette="magma")
+    sns.barplot(
+        data=gender_mix, x="Occupation", y="share", hue="Gender", ax=axes[1], palette="magma"
+    )
     axes[1].set_title("Гендерный состав (%)")
     axes[1].set_ylabel("Процент")
     save_figure(figures_dir / "top_occ_profiles.png")
     insights["top_occupations"] = [int(x) for x in top_occupations]
 
-    occ_mean = train.groupby("Occupation")["Purchase"].agg(["mean", "count", "std"]).reset_index()
+    occ_mean = (
+        train.groupby("Occupation")["Purchase"].agg(["mean", "count", "std"]).reset_index()
+    )
     occ_mean = occ_mean.sort_values("mean", ascending=False)
     plt.figure(figsize=(16, 8))
     sns.barplot(data=occ_mean, x="Occupation", y="mean", palette="viridis")
@@ -800,7 +841,11 @@ def generate_eda_plots(
     save_figure(figures_dir / "marital_age_purchase.png")
 
     temp = train.copy()
-    temp["Cat_Count"] = temp[["Product_Category_1", "Product_Category_2", "Product_Category_3"]].notna().sum(axis=1)
+    temp["Cat_Count"] = (
+        temp[["Product_Category_1", "Product_Category_2", "Product_Category_3"]]
+        .notna()
+        .sum(axis=1)
+    )
     temp["Gender_Binary"] = (temp["Gender"] == "M").astype(int)
     plt.figure(figsize=(14, 7))
     sns.boxenplot(data=temp, x="Cat_Count", y="Purchase", hue="Gender_Binary")
@@ -829,9 +874,7 @@ def generate_eda_plots(
     plt.ylabel("Purchase")
     save_figure(figures_dir / "popularity_vs_price.png")
 
-    occ_city = (
-        train.groupby(["Occupation", "City_Category"])["Purchase"].mean().unstack()
-    )
+    occ_city = train.groupby(["Occupation", "City_Category"])["Purchase"].mean().unstack()
     deviation = (occ_city - global_mean).round(0)
     plt.figure(figsize=(12, 10))
     sns.heatmap(deviation, annot=True, fmt=".0f", cmap="RdYlGn")
@@ -839,9 +882,13 @@ def generate_eda_plots(
     save_figure(figures_dir / "occ_city_deviation.png")
 
     user_stats["User_Spend_Level"] = pd.qcut(
-        user_stats["avg_spend"], q=5, labels=["Low", "Below_Avg", "Average", "Above_Avg", "High"]
+        user_stats["avg_spend"],
+        q=5,
+        labels=["Low", "Below_Avg", "Average", "Above_Avg", "High"],
     )
-    user_profiles = user_stats.merge(train[["User_ID", "Gender"]].drop_duplicates(), on="User_ID", how="left")
+    user_profiles = user_stats.merge(
+        train[["User_ID", "Gender"]].drop_duplicates(), on="User_ID", how="left"
+    )
     user_profiles["Gender_Binary"] = (user_profiles["Gender"] == "M").astype(int)
     plt.figure(figsize=(14, 7))
     sns.violinplot(
@@ -862,7 +909,9 @@ def generate_eda_plots(
 
 def plot_rmse_comparison(baseline_rmse: float, final_rmse: float, figures_dir: Path) -> None:
     plt.figure(figsize=(8, 5))
-    plt.bar(["Baseline", "With New Features"], [baseline_rmse, final_rmse], color=["gray", "green"])
+    plt.bar(
+        ["Baseline", "With New Features"], [baseline_rmse, final_rmse], color=["gray", "green"]
+    )
     plt.title("Сравнение RMSE до и после добавления признаков")
     plt.ylabel("RMSE (ниже - лучше)")
     save_figure(figures_dir / "rmse_improvement_comparison.png")
@@ -877,9 +926,17 @@ def plot_feature_importance(
     fig, axes = plt.subplots(1, 2, figsize=(18, 8))
     model_top = importance_df.head(10).sort_values("importance", ascending=True)
     stat_top = ranking_df.head(10).sort_values("mean_rank", ascending=False)
-    axes[0].barh(model_top["feature"], model_top["importance"], color=sns.color_palette("viridis", len(model_top)))
+    axes[0].barh(
+        model_top["feature"],
+        model_top["importance"],
+        color=sns.color_palette("viridis", len(model_top)),
+    )
     axes[0].set_title(f"ТОП-10: Выбор модели ({best_model_name})")
-    axes[1].barh(stat_top["feature"], stat_top["mean_rank"], color=sns.color_palette("magma", len(stat_top)))
+    axes[1].barh(
+        stat_top["feature"],
+        stat_top["mean_rank"],
+        color=sns.color_palette("magma", len(stat_top)),
+    )
     axes[1].set_title("ТОП-10: Статистическая значимость")
     axes[1].invert_xaxis()
     save_figure(figures_dir / "feature_importance_comparison.png")
@@ -904,15 +961,23 @@ def plot_final_diagnostics(
 ) -> dict[str, Any]:
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     sample_size = min(5000, len(y_true))
-    sample_idx = np.random.default_rng(RANDOM_STATE).choice(len(y_true), size=sample_size, replace=False)
-    axes[0].scatter(y_true.iloc[sample_idx], oof_pred[sample_idx], alpha=0.2, s=8, color="steelblue")
+    sample_idx = np.random.default_rng(RANDOM_STATE).choice(
+        len(y_true), size=sample_size, replace=False
+    )
+    axes[0].scatter(
+        y_true.iloc[sample_idx], oof_pred[sample_idx], alpha=0.2, s=8, color="steelblue"
+    )
     lims = [0, max(float(y_true.max()), float(np.max(oof_pred)))]
     axes[0].plot(lims, lims, "r--", linewidth=1.2)
     axes[0].set_xlabel("Факт (Purchase)")
     axes[0].set_ylabel("Прогноз (Purchase)")
     axes[0].set_title("Факт vs Прогноз (5k точек)")
     top_imp = importance_df.head(15).sort_values("importance", ascending=True)
-    axes[1].barh(top_imp["feature"], top_imp["importance"], color=sns.color_palette("magma", len(top_imp)))
+    axes[1].barh(
+        top_imp["feature"],
+        top_imp["importance"],
+        color=sns.color_palette("magma", len(top_imp)),
+    )
     axes[1].set_title("Топ-15 признаков по важности")
     save_figure(figures_dir / "final_ensemble_performance.png")
 
@@ -930,7 +995,12 @@ def plot_final_diagnostics(
     )
     plt.figure(figsize=(14, 7))
     plt.plot(error_curve["Product_Popularity"], error_curve["abs_pct_error"], color="red")
-    plt.axhline(error_curve["abs_pct_error"].mean(), color="black", linestyle="--", label="Средняя ошибка")
+    plt.axhline(
+        error_curve["abs_pct_error"].mean(),
+        color="black",
+        linestyle="--",
+        label="Средняя ошибка",
+    )
     plt.fill_between(
         error_curve["Product_Popularity"],
         error_curve["abs_pct_error"] * 0.9,
@@ -1137,7 +1207,10 @@ def run_pipeline(train_path: Path, test_path: Path, output_root: Path) -> dict[s
 
 def main() -> None:
     import argparse
-    parser = argparse.ArgumentParser(description="Train and compare Black Friday purchase models.")
+
+    parser = argparse.ArgumentParser(
+        description="Train and compare Black Friday purchase models."
+    )
     parser.add_argument("--train", type=Path, default=Path("data/train.csv"))
     parser.add_argument("--test", type=Path, default=Path("data/test.csv"))
     parser.add_argument("--output", type=Path, default=Path("output/black_friday"))
